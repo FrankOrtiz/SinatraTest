@@ -3,12 +3,20 @@ require 'pp'
 
 enable :sessions
 
+def check
+	session[:stamina] ||= 10
+	session[:gold] ||= 0
+	session[:gold_owed] ||= 0
+	session[:drinks] ||= 0
+	session[:drunk] ||= 0
+	session[:current_location] ||= :home
+end
 # show the current state
 get "/" do 
 	session[:current_location] ||= :home
 
 	h = "<html><head><link rel='stylesheet' href='game.css' /></head><body class='#{session[:current_location]}'>"
-	h += "<form action='/home' method='post'><input type='submit' value='Restart the drunken rage' /></form>"
+	h += "<form action='/home' method='post'><input type='submit' value='Restart Drunken Adventure' /></form>"
 	h += "<p>You are currently at: #{session[:current_location]}</p>"
 	h += "<p><strong>You've had:</strong> #{session[:drinks]} drinks</p>"
 	h += "<p><strong>You owe the tavern:</strong> #{session[:gold_owed]} gp"
@@ -19,15 +27,19 @@ get "/" do
 
 	case session[:current_location]
 	when :home
-		h += "<form action='/town' method='post'><input type='submit' value='Start drunken adventure' /></form>"
+		check
+		h += "<form action='/town' method='post'><input type='submit' value='Start Drunken Adventure' /></form>"
 	when :town
+		check
 		h += "<form action='/tavern' method='post'><input type='submit' value='Go to local tavern' /></form>"
 		h += "<form action='/field' method='post'><input type='submit' value='Go to the field' /></form>"
 	when :field
+		check
 		h += "<form action='/field/explore' method='post'><input type='submit' value='Explore field' /></form>"
 		h += "<form action='/search/gold' method='post'><input type='submit' value='Search for gold' /></form>"
 		h += "<form action='/town' method='post'><input type='submit' value='Head back to town' /></form>"
 	when :tavern
+		check
 		h += "<form action='/tavern/drink' method='post'><input type='submit' value='Buy a drink (3 gp)' /></form>"
 		h += "<form action='/town' method='post'><input type='submit' value='Head back outside' /></form>"
 		h += "<form action='/tavern/rest' method='post'><input type='submit' value='Rest for the night (5 gp)' /></form>"
@@ -37,6 +49,7 @@ get "/" do
 			h += "<form action='/pay/dept' method='post'><input type='submit' value='Pay off dept (#{session[:gold_owed]} gp)' /></form>"
 		end
 	else 
+		h += "<form action='/town' method='post'><input type='submit' value='Start' /></form>"
 	end
 # 
 
@@ -54,16 +67,16 @@ get "/" do
 	h
 	
 end
+
 post "/home" do
+	session[:current_location] = :home
 	session[:stamina] = 10
 	session[:gold] = 0
 	session[:gold_owed] = 0
 	session[:drinks] = 0
 	session[:drunk] = 0
-	session[:current_location] = :home
 	redirect to '/'
 end
-
 post "/self/stamina" do
 	session[:stamina] ||= 10
 	redirect to'/'
@@ -83,6 +96,7 @@ post "/gold/owed" do
 	session[:gold_owed] ||=0
 	redirect to '/'
 end
+
 
 post "/pay/dept" do
 	if session[:gold_owed] >= session[:gold] # If user dept is equal to or higher than what user can pay
