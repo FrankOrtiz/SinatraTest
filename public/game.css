@@ -1,8 +1,12 @@
+body.town {
+	background-image: url('town.jpg');
+	color: yellow;
+}
 body.field {
-	background-image: url('cat.jpg');
+	background-image: url('field.png');
 	color: yellow;
 }
 body.tavern {
-	background-color: #842;
-	color: white;
+	background-image: url('tavern.jpg');
+	color: yellow;
 }
