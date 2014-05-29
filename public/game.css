@@ -1,12 +1,16 @@
 body.town {
-	background-image: url('town.jpg');
+	background-image: url('town2.png');
 	color: yellow;
 }
 body.field {
-	background-image: url('field.png');
+	background-image: url('field2.png');
 	color: yellow;
 }
 body.tavern {
 	background-image: url('tavern.jpg');
+	color: yellow;
+}
+body.home {
+	background-image: url('home.png');
 	color: yellow;
 }

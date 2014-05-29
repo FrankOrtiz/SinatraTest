@@ -5,7 +5,10 @@ enable :sessions
 
 # show the current state
 get "/" do 
+	session[:current_location] ||= :home
+
 	h = "<html><head><link rel='stylesheet' href='game.css' /></head><body class='#{session[:current_location]}'>"
+	h += "<form action='/home' method='post'><input type='submit' value='Restart the drunken rage' /></form>"
 	h += "<p>You are currently at: #{session[:current_location]}</p>"
 	h += "<p><strong>You've had:</strong> #{session[:drinks]} drinks</p>"
 	h += "<p><strong>You owe the tavern:</strong> #{session[:gold_owed]} gp"
@@ -15,6 +18,8 @@ get "/" do
 
 
 	case session[:current_location]
+	when :home
+		h += "<form action='/town' method='post'><input type='submit' value='Start drunken adventure' /></form>"
 	when :town
 		h += "<form action='/tavern' method='post'><input type='submit' value='Go to local tavern' /></form>"
 		h += "<form action='/field' method='post'><input type='submit' value='Go to the field' /></form>"
@@ -32,7 +37,6 @@ get "/" do
 			h += "<form action='/pay/dept' method='post'><input type='submit' value='Pay off dept (#{session[:gold_owed]} gp)' /></form>"
 		end
 	else 
-		h += "<form action='/town' method='post'><input type='submit' value='Start' /></form>"
 	end
 # 
 
@@ -49,6 +53,15 @@ get "/" do
 
 	h
 	
+end
+post "/home" do
+	session[:stamina] = 10
+	session[:gold] = 0
+	session[:gold_owed] = 0
+	session[:drinks] = 0
+	session[:drunk] = 0
+	session[:current_location] = :home
+	redirect to '/'
 end
 
 post "/self/stamina" do
