@@ -26,7 +26,11 @@ get "/" do
 		h += "<form action='/tavern/drink' method='post'><input type='submit' value='Buy a drink (3 gp)' /></form>"
 		h += "<form action='/town' method='post'><input type='submit' value='Head back outside' /></form>"
 		h += "<form action='/tavern/rest' method='post'><input type='submit' value='Rest for the night (5 gp)' /></form>"
-		h += "<form action='/pay/dept' method='post'><input type='submit' value='Pay off dept (#{session[:gold]} gp)' /></form>"
+		if session[:gold_owed] > session[:gold]
+			h += "<form action='/pay/dept' method='post'><input type='submit' value='Pay off dept (#{session[:gold]} gp)' /></form>"
+		else 
+			h += "<form action='/pay/dept' method='post'><input type='submit' value='Pay off dept (#{session[:gold_owed]} gp)' /></form>"
+		end
 	else 
 		h += "<form action='/town' method='post'><input type='submit' value='Start' /></form>"
 	end
@@ -46,6 +50,7 @@ get "/" do
 	h
 	
 end
+
 post "/self/stamina" do
 	session[:stamina] ||= 10
 	redirect to'/'
@@ -67,8 +72,14 @@ post "/gold/owed" do
 end
 
 post "/pay/dept" do
-	session[:gold_owed] -= session[:gold]
-	session[:gold] -= session[:gold]
+	if session[:gold_owed] >= session[:gold] # If user dept is equal to or higher than what user can pay
+		session[:gold_owed] -= session[:gold] # Subtract total user gold from user dept
+		session[:gold] -= session[:gold] # Subtract gold used to pay off dept
+	else
+		session[:gold_owed] < session[:gold] # If user dept is lower than user gold
+		session[:gold] -= session[:gold_owed] # Subtract user dept from user gold
+		session[:gold_owed] -= session[:gold_owed] # Subtract all dept
+	end
 	redirect to '/'
 end
 
@@ -120,7 +131,6 @@ get "/self/passedout" do
 		session[:gold_owed] = 0
 		exert
 	end
-	redirect to '/'
 	redirect to '/'
 
 end
