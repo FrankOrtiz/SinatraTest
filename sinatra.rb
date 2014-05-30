@@ -9,6 +9,7 @@ def check
 	session[:gold_owed] ||= 0
 	session[:drinks] ||= 0
 	session[:drunk] ||= 0
+	session[:day] ||= 1
 	session[:current_location] ||= :home
 end
 # show the current state
@@ -18,6 +19,7 @@ get "/" do
 	h = "<html><head><link rel='stylesheet' href='game.css' /></head><body class='#{session[:current_location]}'>"
 	h += "<form action='/home' method='post'><input type='submit' value='Restart Drunken Adventure' /></form>"
 	h += "<p>You are currently at: #{session[:current_location]}</p>"
+	h += "<p>#{session[:day]}/10 days have passed</p>"
 	h += "<p><strong>You've had:</strong> #{session[:drinks]} drinks</p>"
 	h += "<p><strong>You owe the tavern:</strong> #{session[:gold_owed]} gp"
 	h += "<p><strong>Gold:</strong> #{session[:gold]}</p>"
@@ -42,7 +44,11 @@ get "/" do
 		check
 		h += "<form action='/tavern/drink' method='post'><input type='submit' value='Buy a drink (3 gp)' /></form>"
 		h += "<form action='/town' method='post'><input type='submit' value='Head back outside' /></form>"
-		h += "<form action='/tavern/rest' method='post'><input type='submit' value='Rest for the night (5 gp)' /></form>"
+		if session[:day] < 10
+			h += "<form action='/tavern/rest' method='post'><input type='submit' value='Rest for the night (5 gp)' /></form>"
+		else
+			h += "<form action='/home' method='post'><input type='submit' value='Rest for the last night (5 gp)' /></form>"
+		end
 		if session[:gold_owed] > session[:gold]
 			h += "<form action='/pay/dept' method='post'><input type='submit' value='Pay off dept (#{session[:gold]} gp)' /></form>"
 		else 
@@ -75,6 +81,7 @@ post "/home" do
 	session[:gold_owed] = 0
 	session[:drinks] = 0
 	session[:drunk] = 0
+	session[:day] = 1
 	redirect to '/'
 end
 post "/self/stamina" do
@@ -126,14 +133,19 @@ post "/tavern/drink" do
 	# session[:wasted] += 1
 	redirect to '/'
 end
+post "/day" do
+	session[:day] ||= 0
+	redirect to '/'
+end
 
 post "/tavern/rest" do
 	if session[:gold] < 5
-		redirect '/'
+		redirect to '/'
 	else
 		session[:gold] -= 5
 		session[:drunk] = 0
 		session[:stamina] = 10
+		session[:day] += 1
 		redirect to '/'
 	end
 end
@@ -199,10 +211,10 @@ def explore_field(eventnumber)
 			session[:stamina] = 0
 		end
 		# session[:wasted] = 0
-	elsif eventnumber < 84 # 85% chance
+	elsif eventnumber < 80 # 85% chance
 		session[:explore] = "<body>You encounter nothing.</body>"
 	else  # 10% chance
-		found ||= 1 + rand(5)
+		found ||= 1 + rand(10)
 		session[:explore] = "<body>You found #{found} gp!</body>"
 		session[:gold] += found
 	end
@@ -210,7 +222,7 @@ end
 
 post "/field/explore" do
 	session[:stamina] ||= 10
-	event = 1 + rand(100) + session[:drunk] * 2
+	event = 1 + rand(100) + session[:drunk] * 1.5
 	explore_field(event)
 	session[:explore]
 	exert

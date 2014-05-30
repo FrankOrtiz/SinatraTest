@@ -1,9 +1,9 @@
 body.town {
-	background-image: url('town2.png');
+	background-image: url('town.jpg');
 	color: yellow;
 }
 body.field {
-	background-image: url('field2.png');
+	background-image: url('field.png');
 	color: yellow;
 }
 body.tavern {
@@ -11,6 +11,6 @@ body.tavern {
 	color: yellow;
 }
 body.home {
-	background-image: url('home.png');
+	background-image: url('home1.jpg');
 	color: yellow;
 }
